@@ -11,38 +11,42 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, HttpUrl
+from typing import Optional, List, Dict
 
-# Example schemas (replace with your own):
-
-class User(BaseModel):
+class Developer(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Developers collection schema
+    Collection name: "developer"
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    username: str = Field(..., description="GitHub username")
+    name: Optional[str] = Field(None, description="Display name")
+    email: Optional[str] = Field(None, description="Primary email")
+    avatar_url: Optional[HttpUrl] = Field(None, description="Avatar URL")
+    bio: Optional[str] = Field(None, description="Bio from GitHub or custom")
+    company: Optional[str] = None
+    location: Optional[str] = None
+    blog: Optional[str] = None
+    twitter_username: Optional[str] = None
+    html_url: Optional[HttpUrl] = None
+    public_repos: Optional[int] = 0
 
-class Product(BaseModel):
+class Session(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    Session tokens for authenticated users
+    Collection: "session"
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+    token: str = Field(..., description="Opaque session token")
+    user_id: str = Field(..., description="Reference to developer _id")
+    expires_at: float = Field(..., description="Unix timestamp when token expires")
 
-# Add your own schemas here:
-# --------------------------------------------------
-
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Portfolio(BaseModel):
+    """
+    Public portfolio content per user
+    Collection: "portfolio"
+    """
+    username: str = Field(..., description="GitHub username (slug)")
+    headline: Optional[str] = Field("Building with code.", description="Hero headline")
+    subheadline: Optional[str] = Field("Developer portfolio powered by GitHub.")
+    sections: List[Dict] = Field(default_factory=list, description="Flexible content blocks")
+    theme: Dict = Field(default_factory=lambda: {"accent":"#3b82f6"})
